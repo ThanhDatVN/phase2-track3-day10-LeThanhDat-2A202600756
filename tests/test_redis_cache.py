@@ -1,6 +1,7 @@
-"""Tests for SharedRedisCache — requires Redis running on localhost:6379.
+"""Tests for the shared parameter-backed cache.
 
-Start Redis with: docker compose up -d
+The class keeps the starter name SharedRedisCache for interface compatibility,
+but the implementation intentionally does not use the Redis Python package.
 """
 from __future__ import annotations
 
@@ -11,31 +12,15 @@ import pytest
 from reliability_lab.cache import SharedRedisCache
 
 
-def _redis_available() -> bool:
-    try:
-        import redis as redis_lib
-
-        r = redis_lib.Redis.from_url("redis://localhost:6379/0")
-        r.ping()
-        r.close()
-        return True
-    except Exception:
-        return False
-
-
-pytestmark = pytest.mark.skipif(
-    not _redis_available(),
-    reason="Redis not running — start with: docker compose up -d",
-)
-
-
 @pytest.fixture
 def cache() -> SharedRedisCache:  # type: ignore[misc]
+    storage: dict[str, dict[str, object]] = {}
     c = SharedRedisCache(
-        redis_url="redis://localhost:6379/0",
+        redis_url="parameter-store",
         ttl_seconds=60,
         similarity_threshold=0.5,
         prefix="rl:test:",
+        storage=storage,
     )
     c.flush()
     yield c  # type: ignore[misc]
@@ -43,8 +28,8 @@ def cache() -> SharedRedisCache:  # type: ignore[misc]
     c.close()
 
 
-def test_redis_connection(cache: SharedRedisCache) -> None:
-    """Verifies Redis connectivity — should pass before implementing get/set."""
+def test_shared_storage_available(cache: SharedRedisCache) -> None:
+    """Verifies the injected shared storage is available."""
     assert cache.ping()
 
 
@@ -56,11 +41,13 @@ def test_set_and_exact_get(cache: SharedRedisCache) -> None:
 
 
 def test_ttl_expiry() -> None:
+    storage: dict[str, dict[str, object]] = {}
     c = SharedRedisCache(
-        redis_url="redis://localhost:6379/0",
+        redis_url="parameter-store",
         ttl_seconds=1,
         similarity_threshold=0.5,
         prefix="rl:test:ttl:",
+        storage=storage,
     )
     c.flush()
     c.set("temp query", "temp response")
@@ -72,18 +59,21 @@ def test_ttl_expiry() -> None:
 
 
 def test_shared_state_across_instances() -> None:
-    """Two SharedRedisCache instances on same Redis should see same data."""
+    """Two cache instances with the same storage should see the same data."""
+    storage: dict[str, dict[str, object]] = {}
     c1 = SharedRedisCache(
-        redis_url="redis://localhost:6379/0",
+        redis_url="parameter-store",
         ttl_seconds=60,
         similarity_threshold=0.5,
         prefix="rl:test:shared:",
+        storage=storage,
     )
     c2 = SharedRedisCache(
-        redis_url="redis://localhost:6379/0",
+        redis_url="parameter-store",
         ttl_seconds=60,
         similarity_threshold=0.5,
         prefix="rl:test:shared:",
+        storage=storage,
     )
     c1.flush()
     c1.set("shared query", "shared response")

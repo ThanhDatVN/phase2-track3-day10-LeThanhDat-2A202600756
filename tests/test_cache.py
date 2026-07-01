@@ -4,7 +4,7 @@ Tests cover: exact match, similarity, TTL, privacy guardrails, false-hit detecti
 """
 import time
 
-from reliability_lab.cache import ResponseCache
+from reliability_lab.cache import ResponseCache, SharedRedisCache
 
 
 def test_exact_match_returns_hit() -> None:
@@ -60,6 +60,14 @@ def test_false_hit_detection_different_years() -> None:
     assert cache.false_hit_log[0]["reason"] == "date_or_number_mismatch"
 
 
+def test_false_hit_detection_different_numeric_intent() -> None:
+    cache = ResponseCache(ttl_seconds=60, similarity_threshold=0.3)
+    cache.set("Summarize the admission FAQ in 5 bullets", "five bullet summary")
+    cached, _ = cache.get("Summarize the admission FAQ in 3 bullets")
+    assert cached is None
+    assert cache.false_hit_log[-1]["reason"] == "date_or_number_mismatch"
+
+
 def test_same_year_not_flagged_as_false_hit() -> None:
     cache = ResponseCache(ttl_seconds=60, similarity_threshold=0.3)
     cache.set("Summarize refund policy for 2024 deadline", "2024 refund policy")
@@ -73,3 +81,32 @@ def test_ngram_similarity_scores() -> None:
     assert 0.5 < score < 1.0
     score_low = ResponseCache.similarity("hello", "completely different")
     assert score_low < 0.3
+
+
+def test_cache_upserts_exact_query() -> None:
+    cache = ResponseCache(ttl_seconds=60, similarity_threshold=0.5)
+    cache.set("hello world", "first")
+    cache.set("  Hello   World  ", "second")
+    cached, score = cache.get("hello world")
+    assert cached == "second"
+    assert score == 1.0
+    assert len(cache._entries) == 1
+
+
+def test_shared_parameter_cache_across_instances() -> None:
+    storage: dict[str, dict[str, object]] = {}
+    first = SharedRedisCache("parameter-store", 60, 0.5, prefix="test:", storage=storage)
+    second = SharedRedisCache("parameter-store", 60, 0.5, prefix="test:", storage=storage)
+    first.set("shared query", "shared response")
+    cached, score = second.get("shared query")
+    assert cached == "shared response"
+    assert score == 1.0
+
+
+def test_shared_parameter_cache_ttl_expiry() -> None:
+    storage: dict[str, dict[str, object]] = {}
+    cache = SharedRedisCache("parameter-store", 1, 0.5, prefix="ttl:", storage=storage)
+    cache.set("temp query", "temp response")
+    time.sleep(1.1)
+    cached, _ = cache.get("temp query")
+    assert cached is None

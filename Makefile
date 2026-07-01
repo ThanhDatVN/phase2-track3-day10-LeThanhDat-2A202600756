@@ -1,4 +1,4 @@
-.PHONY: test lint typecheck run-chaos report clean docker-up docker-down
+.PHONY: test lint typecheck run-chaos report dashboard clean docker-up docker-down
 
 test:
 	pytest -q
@@ -15,6 +15,9 @@ run-chaos:
 report:
 	python scripts/generate_report.py --metrics reports/metrics.json --out reports/final_report.md
 
+dashboard:
+	@echo "Open reports/dashboard.html in your browser"
+
 docker-up:
 	docker compose up -d
 
@@ -22,4 +25,4 @@ docker-down:
 	docker compose down
 
 clean:
-	rm -rf .pytest_cache .ruff_cache .mypy_cache reports/metrics.json reports/final_report.md
+	rm -rf .pytest_cache .ruff_cache .mypy_cache

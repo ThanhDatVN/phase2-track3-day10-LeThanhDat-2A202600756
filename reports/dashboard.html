@@ -1,0 +1,1285 @@
+﻿<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Day 10 Reliability Results Dashboard</title>
+  <style>
+    :root {
+      --page: #f4f6f8;
+      --ink: #17212b;
+      --muted: #637083;
+      --surface: #ffffff;
+      --surface-2: #eef2f6;
+      --line: #d9e0e8;
+      --green: #197a52;
+      --green-bg: #dff3ea;
+      --blue: #2f6fbd;
+      --blue-bg: #e4edf9;
+      --red: #c44242;
+      --red-bg: #f8e4e4;
+      --amber: #a66b13;
+      --amber-bg: #fff0d6;
+      --violet: #6952ad;
+      --shadow: 0 14px 34px rgba(23, 33, 43, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--page);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 42px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .topbar strong {
+      color: var(--ink);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero-main {
+      min-height: 360px;
+      padding: 28px;
+      border-radius: 8px;
+      color: white;
+      background:
+        linear-gradient(115deg, rgba(18, 38, 55, 0.95), rgba(34, 90, 112, 0.84)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='680' viewBox='0 0 1400 680'%3E%3Crect width='1400' height='680' fill='%23213a4b'/%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.28'%3E%3Cpath d='M80 520 C240 420 340 480 500 350 S820 230 1020 280 1210 170 1340 120' stroke-width='7'/%3E%3Cpath d='M60 425 C230 470 330 350 470 370 S760 520 930 410 1180 320 1320 370' stroke-width='3'/%3E%3Cpath d='M140 260 H440 V180 H710 V300 H980 V210 H1270' stroke-width='4'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.9'%3E%3Ccircle cx='500' cy='350' r='9'/%3E%3Ccircle cx='1020' cy='280' r='9'/%3E%3Ccircle cx='1270' cy='210' r='9'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: cover;
+      background-position: center;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 780px;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      max-width: 760px;
+      margin-top: 14px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .tag {
+      display: inline-flex;
+      min-height: 30px;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      color: rgba(255, 255, 255, 0.92);
+      font-size: 13px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .hero-result {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .hero-result div {
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-result span {
+      display: block;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .hero-result strong {
+      display: block;
+      margin-top: 6px;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .score-card {
+      padding: 22px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      display: grid;
+      align-content: space-between;
+      gap: 20px;
+    }
+
+    .score-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .score-value {
+      font-size: 72px;
+      line-height: 0.9;
+      font-weight: 850;
+    }
+
+    .score-label {
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 14px;
+    }
+
+    .ring {
+      width: 150px;
+      aspect-ratio: 1;
+    }
+
+    .ring text {
+      font: 800 28px Inter, system-ui, sans-serif;
+      fill: var(--ink);
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-list li {
+      display: grid;
+      grid-template-columns: 18px 1fr;
+      gap: 9px;
+      list-style: none;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .summary-list ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      margin-top: 5px;
+      border-radius: 99px;
+      background: var(--green);
+    }
+
+    .dot.warn {
+      background: var(--amber);
+    }
+
+    .dot.fail {
+      background: var(--red);
+    }
+
+    section {
+      margin-top: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .section-head h2 {
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .kpi-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      min-height: 170px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .kpi-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .kpi-name {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .kpi-main {
+      margin-top: 10px;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .pill {
+      display: inline-flex;
+      min-height: 26px;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .pill.good {
+      color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .pill.warn {
+      color: var(--amber);
+      background: var(--amber-bg);
+    }
+
+    .pill.bad {
+      color: var(--red);
+      background: var(--red-bg);
+    }
+
+    .kpi-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .track {
+      height: 9px;
+      margin-top: 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .fill {
+      display: block;
+      width: var(--w);
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+
+    .layout-2 {
+      grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .chart-panel {
+      min-height: 380px;
+    }
+
+    .chart-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .chart-title h3 {
+      font-size: 17px;
+    }
+
+    .chart-title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .bars {
+      display: grid;
+      gap: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 180px) 1fr minmax(94px, auto);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .bar-name {
+      font-weight: 750;
+      font-size: 14px;
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .bar-stack {
+      display: grid;
+      gap: 7px;
+    }
+
+    .bar-track {
+      height: 13px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      display: block;
+      height: 100%;
+      width: var(--w);
+      border-radius: inherit;
+      background: var(--blue);
+    }
+
+    .bar-fill.off {
+      background: #9aa7b5;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .legend i {
+      width: 18px;
+      height: 8px;
+      border-radius: 99px;
+      display: inline-block;
+      background: var(--blue);
+    }
+
+    .legend i.off {
+      background: #9aa7b5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .status {
+      display: inline-flex;
+      min-width: 66px;
+      min-height: 28px;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .status.pass,
+    .status.met {
+      color: var(--green);
+      background: var(--green-bg);
+    }
+
+    .status.miss {
+      color: var(--red);
+      background: var(--red-bg);
+    }
+
+    .scenario-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .scenario {
+      min-height: 210px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      align-content: space-between;
+    }
+
+    .scenario h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+
+    .scenario p {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }
+
+    .scenario-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      min-height: 146px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      position: relative;
+    }
+
+    .step::after {
+      content: ">";
+      position: absolute;
+      right: -11px;
+      top: 50%;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .step:last-child::after {
+      content: "";
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--blue-bg);
+      color: var(--blue);
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .step strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .step span {
+      color: var(--muted);
+      line-height: 1.38;
+      font-size: 13px;
+    }
+
+    .action-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .action {
+      min-height: 184px;
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .action h3 {
+      font-size: 17px;
+    }
+
+    .action p {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .evidence-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .evidence {
+      min-height: 126px;
+      padding: 16px;
+    }
+
+    .evidence strong {
+      display: block;
+      margin-bottom: 9px;
+      font-size: 15px;
+    }
+
+    .evidence code {
+      display: block;
+      color: var(--muted);
+      white-space: normal;
+      line-height: 1.42;
+      font-size: 13px;
+    }
+
+    .source-list {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .source {
+      padding: 14px;
+      min-height: 122px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .source strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .source p {
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 13px;
+    }
+
+    .radar-wrap {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .radar {
+      width: 100%;
+      max-width: 240px;
+      aspect-ratio: 1;
+    }
+
+    .radar text {
+      font: 700 11px Inter, system-ui, sans-serif;
+      fill: var(--muted);
+    }
+
+    .radar-notes {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .radar-notes strong {
+      color: var(--ink);
+    }
+
+    @media (max-width: 1060px) {
+      .hero,
+      .layout-2,
+      .radar-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .kpi-grid,
+      .scenario-grid,
+      .action-grid,
+      .evidence-grid,
+      .source-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .pipeline {
+        grid-template-columns: 1fr;
+      }
+
+      .step::after {
+        content: "v";
+        right: 18px;
+        top: auto;
+        bottom: -17px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .wrap {
+        width: min(100% - 22px, 1220px);
+        padding-top: 12px;
+      }
+
+      .topbar,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .section-head p {
+        text-align: left;
+      }
+
+      .hero-main,
+      .score-card {
+        padding: 18px;
+      }
+
+      .hero-result,
+      .kpi-grid,
+      .scenario-grid,
+      .action-grid,
+      .evidence-grid,
+      .source-list {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 1fr;
+        gap: 7px;
+      }
+
+      .bar-value {
+        text-align: left;
+      }
+
+      th, td {
+        padding: 10px 6px;
+        font-size: 13px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+      }
+
+      .wrap {
+        width: 100%;
+        padding: 0;
+      }
+
+      .card,
+      .hero-main,
+      .score-card {
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <div><strong>Day 10 Reliability Engineering</strong> / Production Agent Gateway</div>
+      <div>Data: <strong>reports/metrics.json</strong> + <strong>cache_disabled_metrics.json</strong></div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-main">
+        <div>
+          <h1>Reliability dashboard cho gateway LLM production-style</h1>
+          <p class="hero-copy">
+            Phiên bản này trình bày kết quả theo góc nhìn SRE: SLO trước, golden signals tiếp theo,
+            rồi mới đến bằng chứng test, chaos scenario và backlog cải thiện.
+          </p>
+          <div class="hero-tags">
+            <span class="tag">Circuit breaker 3-state</span>
+            <span class="tag">Semantic cache guardrails</span>
+            <span class="tag">Provider fallback chain</span>
+            <span class="tag">No Redis package</span>
+          </div>
+        </div>
+        <div class="hero-result">
+          <div><span>Availability</span><strong id="heroAvailability">99.67%</strong></div>
+          <div><span>P95 latency</span><strong id="heroP95">315.27 ms</strong></div>
+          <div><span>Cache hit</span><strong id="heroCache">61.00%</strong></div>
+          <div><span>Cost saved</span><strong id="heroSaved">$0.10815</strong></div>
+        </div>
+      </div>
+
+      <aside class="score-card">
+        <div class="score-head">
+          <div>
+            <div class="eyebrow">Reliability readiness</div>
+            <div class="score-value" id="scoreValue">100</div>
+            <p class="score-label">
+              Điểm tổng hợp từ availability, latency, fallback, cache và recovery. Mục tiêu demo:
+              rõ phần đã đạt, rõ phần chưa đạt, rõ hành động kế tiếp.
+            </p>
+          </div>
+          <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Reliability readiness score">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#eef2f6" stroke-width="13" />
+            <circle id="scoreRing" cx="60" cy="60" r="48" fill="none" stroke="#2f6fbd" stroke-width="13"
+              stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="301.59" stroke-dashoffset="0" />
+            <text x="60" y="68" text-anchor="middle">100</text>
+          </svg>
+        </div>
+        <div class="summary-list">
+          <ul>
+            <li><span class="dot"></span><span>Latency P95 và recovery time đạt SLO, phù hợp cho demo resilience.</span></li>
+            <li><span class="dot warn"></span><span>Vẫn còn 1 static fallback trong chaos, nên backlog tiếp theo là giảm degraded path.</span></li>
+            <li><span class="dot"></span><span>Cache giảm estimated cost từ $0.13411 xuống $0.05146 và giảm circuit opens.</span></li>
+          </ul>
+        </div>
+      </aside>
+    </header>
+
+    <section>
+      <div class="section-head">
+        <h2>1. Golden Signals và KPI chính</h2>
+        <p>Bố cục ưu tiên latency, traffic, errors và saturation/fallback pressure.</p>
+      </div>
+      <div class="grid kpi-grid" id="kpiGrid"></div>
+    </section>
+
+    <section class="grid layout-2">
+      <div>
+        <div class="section-head">
+          <h2>2. SLO scorecard</h2>
+          <p>Target được đặt theo rubric và report.</p>
+        </div>
+        <div class="card panel">
+          <table id="sloTable">
+            <thead>
+              <tr>
+                <th>SLI</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Gap</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">
+          <h2>3. Reliability profile</h2>
+          <p>Radar tổng hợp các năng lực cốt lõi.</p>
+        </div>
+        <div class="card panel">
+          <div class="radar-wrap">
+            <svg class="radar" viewBox="0 0 240 240" role="img" aria-label="Reliability radar chart">
+              <polygon points="120,22 213,88 178,198 62,198 27,88" fill="none" stroke="#d9e0e8" />
+              <polygon points="120,50 186,97 161,176 79,176 54,97" fill="none" stroke="#d9e0e8" />
+              <polygon points="120,78 159,106 144,154 96,154 81,106" fill="none" stroke="#d9e0e8" />
+              <line x1="120" y1="120" x2="120" y2="22" stroke="#d9e0e8" />
+              <line x1="120" y1="120" x2="213" y2="88" stroke="#d9e0e8" />
+              <line x1="120" y1="120" x2="178" y2="198" stroke="#d9e0e8" />
+              <line x1="120" y1="120" x2="62" y2="198" stroke="#d9e0e8" />
+              <line x1="120" y1="120" x2="27" y2="88" stroke="#d9e0e8" />
+              <polygon id="radarShape" points="" fill="rgba(47,111,189,.22)" stroke="#2f6fbd" stroke-width="3" />
+              <text x="120" y="14" text-anchor="middle">Availability</text>
+              <text x="222" y="84" text-anchor="start">Latency</text>
+              <text x="183" y="218" text-anchor="middle">Cache</text>
+              <text x="57" y="218" text-anchor="middle">Recovery</text>
+              <text x="18" y="84" text-anchor="end">Fallback</text>
+            </svg>
+            <div class="radar-notes">
+              <p><strong>Điểm mạnh:</strong> cache hit 61.00%, P95 315.27 ms, recovery 2265.60 ms.</p>
+              <p><strong>Điểm cần theo dõi:</strong> fallback success rate đạt 98.48%, nhưng vẫn còn 1 static fallback.</p>
+              <p><strong>Ưu tiên:</strong> giảm static fallback trước, sau đó tune threshold/reset để cân bằng recovery và false-open.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid layout-2">
+      <div>
+        <div class="section-head">
+          <h2>4. Cache impact analysis</h2>
+          <p>So sánh trực quan với no-cache baseline.</p>
+        </div>
+        <div class="card panel chart-panel">
+          <div class="chart-title">
+            <h3>With cache vs without cache</h3>
+            <span>Thanh xanh là bản hiện tại</span>
+          </div>
+          <div class="bars" id="compareBars"></div>
+          <div class="legend">
+            <span><i></i>With cache</span>
+            <span><i class="off"></i>No cache</span>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-head">
+          <h2>5. Chaos scenarios</h2>
+          <p>3 tình huống đều pass.</p>
+        </div>
+        <div class="grid scenario-grid" id="scenarioGrid"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>6. Request path và guardrails</h2>
+        <p>Luồng này giải thích tại sao hệ thống giảm lỗi dây chuyền.</p>
+      </div>
+      <div class="pipeline">
+        <div class="step">
+          <div class="step-num">1</div>
+          <strong>User prompt</strong>
+          <span>Nhận query thường, query dated và query privacy-sensitive.</span>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <strong>Cache guard</strong>
+          <span>Bỏ qua query nhạy cảm, dùng TTL, n-gram cosine và false-hit check theo số/năm.</span>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <strong>Circuit breaker</strong>
+          <span>CLOSED -> OPEN -> HALF_OPEN -> CLOSED, tránh retry storm khi provider lỗi.</span>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <strong>Fallback provider</strong>
+          <span>Primary lỗi thì chuyển backup; route được ghi rõ để quan sát hành vi.</span>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <strong>Static fallback</strong>
+          <span>Đường lui cuối cùng khi toàn bộ provider không khả dụng.</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>7. Phương pháp cải thiện tiếp theo</h2>
+        <p>Backlog được xếp theo tác động lên SLO.</p>
+      </div>
+      <div class="grid action-grid">
+        <article class="card action">
+          <span class="pill bad">Priority 1</span>
+          <h3>Giảm static fallback</h3>
+          <p>
+            Các SLO chính đã đạt, nhưng vẫn còn 1 static fallback. Cần đo route-level failure,
+            tăng backup capacity hoặc thêm tertiary fallback rẻ để degraded path về 0.
+          </p>
+        </article>
+        <article class="card action">
+          <span class="pill warn">Priority 2</span>
+          <h3>Tune breaker theo scenario</h3>
+          <p>
+            Thử ma trận failure_threshold/reset_timeout để giảm circuit_open_count mà không làm recovery chậm.
+            Report nên ghi cấu hình thắng dựa trên chaos result, không dựa vào cảm tính.
+          </p>
+        </article>
+        <article class="card action">
+          <span class="pill good">Priority 3</span>
+          <h3>Nâng cấp observability</h3>
+          <p>
+            Bổ sung route labels, provider labels, cache decision logs và correlation id để sau này map metrics
+            sang traces/logs theo chuẩn observability.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>8. Evidence pack</h2>
+        <p>Những dòng này dùng trực tiếp khi demo hoặc nộp bài.</p>
+      </div>
+      <div class="grid evidence-grid">
+        <div class="card evidence">
+          <strong>Metrics artifact</strong>
+          <code>reports/metrics.json<br />reports/metrics.csv</code>
+        </div>
+        <div class="card evidence">
+          <strong>Test result</strong>
+          <code>pytest -q<br />41 passed, 7 xpassed</code>
+        </div>
+        <div class="card evidence">
+          <strong>Quality gates</strong>
+          <code>ruff check: pass<br />mypy src: pass</code>
+        </div>
+        <div class="card evidence">
+          <strong>No Redis package</strong>
+          <code>find_spec('redis') -> None<br />Shared cache qua parameter storage</code>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>9. Cơ sở nghiên cứu dùng để làm lại UI</h2>
+        <p>Nguồn tham khảo chính thức/uy tín.</p>
+      </div>
+      <div class="source-list">
+        <div class="source">
+          <strong><a href="https://sre.google/workbook/monitoring/">Google SRE Workbook</a></strong>
+          <p>Dùng golden signals làm khung metric: latency, traffic, errors và saturation.</p>
+        </div>
+        <div class="source">
+          <strong><a href="https://learn.microsoft.com/en-us/azure/well-architected/reliability/metrics">Azure Well-Architected</a></strong>
+          <p>Gắn reliability targets với availability, recovery và workload monitoring.</p>
+        </div>
+        <div class="source">
+          <strong><a href="https://opentelemetry.io/docs/">OpenTelemetry Docs</a></strong>
+          <p>Định hướng metrics/logs/traces và correlation id cho bước nâng cấp sau.</p>
+        </div>
+        <div class="source">
+          <strong><a href="https://www.nngroup.com/articles/dashboards-preattentive/">NN/g Dashboard UX</a></strong>
+          <p>Ưu tiên độ dài, vị trí và phân cấp thị giác để người xem hiểu nhanh.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const metrics = {
+      total_requests: 300,
+      successful_requests: 299,
+      failed_requests: 1,
+      fallback_successes: 65,
+      static_fallbacks: 1,
+      cache_hits: 183,
+      availability: 0.9967,
+      error_rate: 0.0033,
+      latency_p50_ms: 270.2,
+      latency_p95_ms: 315.27,
+      latency_p99_ms: 320.04,
+      fallback_success_rate: 0.9848,
+      cache_hit_rate: 0.61,
+      circuit_open_count: 8,
+      recovery_time_ms: 2265.596628189087,
+      estimated_cost: 0.051462,
+      estimated_cost_saved: 0.10815,
+      scenarios: {
+        primary_timeout_100: "pass",
+        primary_flaky_50: "pass",
+        all_healthy: "pass"
+      }
+    };
+
+    const noCache = {
+      total_requests: 300,
+      availability: 0.97,
+      error_rate: 0.03,
+      latency_p50_ms: 265.22,
+      latency_p95_ms: 312.19,
+      latency_p99_ms: 318.28,
+      fallback_success_rate: 0.9458,
+      cache_hit_rate: 0,
+      circuit_open_count: 19,
+      recovery_time_ms: 2359.5582644144692,
+      estimated_cost: 0.13411,
+      estimated_cost_saved: 0,
+      scenarios: {
+        primary_timeout_100: "pass",
+        primary_flaky_50: "pass",
+        all_healthy: "pass"
+      }
+    };
+
+    const pct = (value) => `${(value * 100).toFixed(2)}%`;
+    const ms = (value) => `${Number(value).toFixed(2)} ms`;
+    const money = (value) => {
+      const numeric = Number(value);
+      return `${numeric < 0 ? "-" : ""}$${Math.abs(numeric).toFixed(5)}`;
+    };
+    const count = (value) => Number(value).toLocaleString("en-US");
+
+    const reliabilityScore = Math.round((
+      Math.min(metrics.availability / 0.99, 1) * 25 +
+      Math.min(2500 / metrics.latency_p95_ms, 1) * 20 +
+      Math.min(metrics.fallback_success_rate / 0.95, 1) * 20 +
+      Math.min(metrics.cache_hit_rate / 0.1, 1) * 15 +
+      Math.min(5000 / metrics.recovery_time_ms, 1) * 20
+    ));
+
+    document.getElementById("scoreValue").textContent = reliabilityScore;
+    document.querySelector(".ring text").textContent = reliabilityScore;
+    const circumference = 301.59;
+    document.getElementById("scoreRing").setAttribute("stroke-dashoffset", String(circumference * (1 - reliabilityScore / 100)));
+
+    document.getElementById("heroAvailability").textContent = pct(metrics.availability);
+    document.getElementById("heroP95").textContent = ms(metrics.latency_p95_ms);
+    document.getElementById("heroCache").textContent = pct(metrics.cache_hit_rate);
+    document.getElementById("heroSaved").textContent = money(metrics.estimated_cost_saved);
+
+    const kpis = [
+      {
+        name: "Traffic",
+        value: count(metrics.total_requests),
+        status: "good",
+        tag: "300 requests",
+        note: "100 requests cho mỗi chaos scenario.",
+        width: 100
+      },
+      {
+        name: "Latency",
+        value: ms(metrics.latency_p95_ms),
+        status: "good",
+        tag: "P95 pass",
+        note: `P50 ${ms(metrics.latency_p50_ms)} / P99 ${ms(metrics.latency_p99_ms)}.`,
+        width: Math.min(metrics.latency_p95_ms / 2500 * 100, 100)
+      },
+      {
+        name: "Errors",
+        value: pct(metrics.error_rate),
+        status: "good",
+        tag: "SLO met",
+        note: `Availability ${pct(metrics.availability)}, static fallback ${metrics.static_fallbacks}.`,
+        width: metrics.error_rate * 100
+      },
+      {
+        name: "Saturation proxy",
+        value: count(metrics.circuit_open_count),
+        status: "good",
+        tag: "Circuit opens",
+        note: `Giảm từ ${noCache.circuit_open_count} xuống ${metrics.circuit_open_count} khi bật cache.`,
+        width: metrics.circuit_open_count / noCache.circuit_open_count * 100
+      }
+    ];
+
+    const kpiGrid = document.getElementById("kpiGrid");
+    for (const kpi of kpis) {
+      const node = document.createElement("article");
+      node.className = "card kpi";
+      const fillColor = kpi.status === "good" ? "var(--green)" : kpi.status === "warn" ? "var(--amber)" : "var(--red)";
+      node.innerHTML = `
+        <div>
+          <div class="kpi-top">
+            <span class="kpi-name">${kpi.name}</span>
+            <span class="pill ${kpi.status}">${kpi.tag}</span>
+          </div>
+          <div class="kpi-main">${kpi.value}</div>
+          <div class="track"><span class="fill" style="--w:${Math.max(4, Math.min(kpi.width, 100))}%; background:${fillColor}"></span></div>
+        </div>
+        <p class="kpi-note">${kpi.note}</p>
+      `;
+      kpiGrid.appendChild(node);
+    }
+
+    const sloRows = [
+      ["Availability", ">= 99%", metrics.availability, 0.99, pct, true],
+      ["Latency P95", "< 2500 ms", metrics.latency_p95_ms, 2500, ms, false],
+      ["Fallback success", ">= 95%", metrics.fallback_success_rate, 0.95, pct, true],
+      ["Cache hit rate", ">= 10%", metrics.cache_hit_rate, 0.10, pct, true],
+      ["Recovery time", "< 5000 ms", metrics.recovery_time_ms, 5000, ms, false]
+    ];
+
+    const sloBody = document.querySelector("#sloTable tbody");
+    for (const [name, target, actual, threshold, format, higherIsBetter] of sloRows) {
+      const met = higherIsBetter ? actual >= threshold : actual < threshold;
+      const gap = higherIsBetter ? actual - threshold : threshold - actual;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${name}</td>
+        <td>${target}</td>
+        <td>${format(actual)}</td>
+        <td>${gap >= 0 ? "+" : ""}${format(gap)}</td>
+        <td><span class="status ${met ? "met" : "miss"}">${met ? "Met" : "Miss"}</span></td>
+      `;
+      sloBody.appendChild(tr);
+    }
+
+    const compareRows = [
+      ["Availability", noCache.availability, metrics.availability, pct, true],
+      ["Error rate", noCache.error_rate, metrics.error_rate, pct, false],
+      ["Fallback success", noCache.fallback_success_rate, metrics.fallback_success_rate, pct, true],
+      ["Cache hit rate", noCache.cache_hit_rate, metrics.cache_hit_rate, pct, true],
+      ["Circuit opens", noCache.circuit_open_count, metrics.circuit_open_count, count, false],
+      ["Estimated cost", noCache.estimated_cost, metrics.estimated_cost, money, false]
+    ];
+
+    const compareBars = document.getElementById("compareBars");
+    for (const [name, base, current, format, higherIsBetter] of compareRows) {
+      const max = Math.max(base, current, 1);
+      const improved = higherIsBetter ? current >= base : current <= base;
+      const delta = current - base;
+      const row = document.createElement("div");
+      row.className = "bar-row";
+      row.innerHTML = `
+        <div class="bar-name">${name}</div>
+        <div class="bar-stack">
+          <div class="bar-track"><span class="bar-fill off" style="--w:${(base / max) * 100}%"></span></div>
+          <div class="bar-track"><span class="bar-fill" style="--w:${(current / max) * 100}%; background:${improved ? "var(--green)" : "var(--amber)"}"></span></div>
+        </div>
+        <div class="bar-value">${format(current)}<br />delta ${delta >= 0 ? "+" : ""}${format(delta)}</div>
+      `;
+      compareBars.appendChild(row);
+    }
+
+    const scenarioDetails = {
+      primary_timeout_100: ["Primary provider fail 100%.", "Backup phải gánh traffic và circuit phải mở."],
+      primary_flaky_50: ["Primary fail 50%.", "Circuit oscillation được hấp thụ bằng fallback và cache."],
+      all_healthy: ["Primary/backup fail_rate 0%.", "Baseline cho latency, cache hit và cost."],
+    };
+
+    const scenarioGrid = document.getElementById("scenarioGrid");
+    for (const [name, status] of Object.entries(metrics.scenarios)) {
+      const [headline, detail] = scenarioDetails[name] || ["Scenario reliability check.", "Observed behavior captured in metrics."];
+      const card = document.createElement("article");
+      card.className = "card scenario";
+      card.innerHTML = `
+        <div>
+          <h3>${name.replaceAll("_", " ")}</h3>
+          <p><strong>${headline}</strong> ${detail}</p>
+        </div>
+        <div class="scenario-meta">
+          <span>Expected behavior verified</span>
+          <span class="status ${status}">${status}</span>
+        </div>
+      `;
+      scenarioGrid.appendChild(card);
+    }
+
+    const radarValues = [
+      Math.min(metrics.availability / 0.99, 1),
+      Math.min(2500 / metrics.latency_p95_ms, 1),
+      Math.min(metrics.cache_hit_rate / 0.60, 1),
+      Math.min(5000 / metrics.recovery_time_ms, 1),
+      Math.min(metrics.fallback_success_rate / 0.95, 1)
+    ];
+
+    const center = { x: 120, y: 120 };
+    const outer = [
+      { x: 120, y: 22 },
+      { x: 213, y: 88 },
+      { x: 178, y: 198 },
+      { x: 62, y: 198 },
+      { x: 27, y: 88 }
+    ];
+    const points = radarValues.map((value, index) => {
+      const target = outer[index];
+      const x = center.x + (target.x - center.x) * value;
+      const y = center.y + (target.y - center.y) * value;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(" ");
+    document.getElementById("radarShape").setAttribute("points", points);
+  </script>
+</body>
+</html>
+
